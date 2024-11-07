@@ -157,9 +157,10 @@ void playGame() {
 // TESTS //
 
 void waitForInputTest() {
-  // add a printout saying start, don't move
-  // add a printout saying move now
-  // add a printout after input is received
+  Serial.println("/////////////////////////////////");
+  Serial.println("TESTING waitForInput");
+  waitForInput();
+  Serial.println("Input received, test complete");
 }
 
 void testHardware() {
