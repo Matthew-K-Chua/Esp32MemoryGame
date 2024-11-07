@@ -1,4 +1,7 @@
 #include <Arduino.h>
+
+// MARCUS PLEASE FORGIVE ME IDK WHAT IM DOING
+
 int createSequence(int sequence) {
   // should add one more random int
   // to the sequence number which I will
@@ -42,6 +45,26 @@ void flashLights() {
 }
 
 bool playerTurn(int sequence) {
+  int nextLot = NULL;
+  int next = NULL;
+  int factor = NULL;
+  int input = NULL;
+  bool roundWon = 1;
+  int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
+  for (int i=1;sequenceLength;i++) {
+    input = getPlayerInput();
+    factor = 10*(sequenceLength-i);
+    nextLot = floor(sequence/factor);
+    next = nextLot%10;
+    if (input != next) {
+      roundWon = 0;
+      return roundWon;
+    }
+  }
+  flashLights();
+}
+
+int getPlayerInput() {
 
 }
 
@@ -80,12 +103,10 @@ void playGame() {
   int sequence = NULL;
   bool roundWon = true;
   while (roundWon == true)
-  sequence = createSequence(sequence);
-  displaySequence(sequence);
-  flashLights();
-  bool roundWon = playerTurn(sequence);
-  if (roundWon == true) {
     flashLights();
-  }
+    sequence = createSequence(sequence);
+    displaySequence(sequence);
+    flashLights();
+    bool roundWon = playerTurn(sequence);
 }
 
