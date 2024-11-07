@@ -1,15 +1,17 @@
 #include <Arduino.h>
+// Pinouts //
 #define yellowLED 4
 #define redLED 0
 #define blueLED 2
 #define greenLED 15
 #define vrxPin 1
 #define vryPin 3
+#define joystickButton 6
 #define inputThreshold 400
 
 void setup() {
   Serial.begin(9600);
-  randomSeed(analogRead(0));
+  randomSeed(analogRead(0)); // for pseudo random function
 }
 
 void loop() {
@@ -20,6 +22,8 @@ void loop() {
 bool waitForInput() {
   int xValue = analogRead(vrxPin);
   int yValue = analogRead(vryPin);
+
+  // filter out noise, check for input
   while ((abs(xValue) <  inputThreshold) || (abs(yValue) < inputThreshold)) {
     delay(1);
   }
@@ -27,6 +31,7 @@ bool waitForInput() {
 }
 
 void showLight(int light, int ledValue) {
+  // display the correct light
   switch (light) {
   case 1:
     digitalWrite(yellowLED, ledValue);
@@ -44,21 +49,23 @@ void showLight(int light, int ledValue) {
 }
 
 void flashLights() {
+  // turn on and off all lights twice
+  int fps = 2; // flashes per second
+  int delayAmount = 1000/(fps*2);
   for (int i=1;2;i++) {
     for (int light=1;4;light++) {
       showLight(light, HIGH);
     }
-    delay(250);
+    delay(delayAmount);
     for (int light=1;4;light++) {
       showLight(light, LOW);
     }
-    delay(250);
+    delay(delayAmount);
   }
 }
 
 int mattsCookedArrayAppend(int array, int nextValue) {
-  int arrayLength = floor(log(array)/log(10)); // get the length of the array
-  array += pow(10,arrayLength+1)*nextValue;
+  array = array * 10 + nextValue; // shift all numbers to the next 10's place, add the new number in the 1's palce.
   return array;
 }
 
@@ -126,9 +133,7 @@ bool playerTurn(int sequence) {
   int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
   for (int i=1;sequenceLength;i++) {
     input = getPlayerInput();
-    factor = 10*(sequenceLength-i);
-    nextLot = floor(sequence/factor);
-    next = nextLot%10;
+    next = mattsCookedArrayIndexReturn(sequence, i);
     if (input != next) {
       roundWon = 0;
       return roundWon;
@@ -151,21 +156,17 @@ void playGame() {
 
 // TESTS //
 
-void testHardware() {
-  // test LEDS on and off
-  // test the joystick
-  // test the joystick button
-}
-
 void waitForInputTest() {
   // add a printout saying start, don't move
   // add a printout saying move now
   // add a printout after input is received
 }
 
-void showLightTest() {
+void testHardware() {
   Serial.println("/////////////////////////////////");
-  Serial.println("TESTING showLight");
+  Serial.println("TESTING Hardware");
+
+  Serial.println("Testing LEDS");
   int ledValue = HIGH;
   digitalWrite(yellowLED, ledValue);
   Serial.println("Yellow On");
@@ -181,7 +182,21 @@ void showLightTest() {
   digitalWrite(redLED, ledValue);
   digitalWrite(blueLED, ledValue);
   digitalWrite(greenLED, ledValue);
-  Serial.println("Test Complete");
+  Serial.println("Finished testing LEDs");
+  Serial.println("Testing joystick controller for 7 seconds. Please move the joystick and push the button");
+  int currentTime = millis();
+  int stopTime = currentTime + 5000;
+  while (currentTime < stopTime) {
+    int xValue = analogRead(vrxPin);
+    int yValue = analogRead(vryPin);
+    int joystickButtonValue = analogRead(joystickButton);
+    Serial.println(xValue);
+    Serial.println(yValue);
+    Serial.println(joystickButtonValue);
+    delay(10);
+  }
+  Serial.println("Finished testing joystick controller.");
+  Serial.println("Hardware test Complete");
 }
 
 void flashLightsTest() {
