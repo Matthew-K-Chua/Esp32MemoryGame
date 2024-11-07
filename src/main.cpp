@@ -1,10 +1,10 @@
 #include <Arduino.h>
-static int yellowLED = 4;
-static int redLED = 0;
-static int blueLED = 2;
-static int greenLED = 15;
-const int vrxPin = 1;
-const int vryPin = 3;
+#define yellowLED 4
+#define redLED 0
+#define blueLED 2
+#define greenLED 15
+#define vrxPin 1
+#define vryPin 3
 #define inputThreshold 400
 
 void setup() {
