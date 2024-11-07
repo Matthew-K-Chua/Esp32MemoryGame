@@ -67,7 +67,7 @@ int createSequence(int sequence) {
   // to the sequence number which I will
   // treat as an array
   int nextInt = random(4); // get a random 1/2/3/4
-  if (sequence != NULL) {
+  if (sequence > 0) {
     sequence = mattsCookedArrayAppend(sequence, nextInt); // "append next in sequence"
   } else {
     sequence = nextInt; // if the game has only begun, set sequence to the first rand int
@@ -118,10 +118,10 @@ int getPlayerInput() { // verify that this outputs the correct things, otherwise
 }
 
 bool playerTurn(int sequence) {
-  int nextLot = NULL;
-  int next = NULL;
-  int factor = NULL;
-  int input = NULL;
+  int nextLot = 0;
+  int next = 0;
+  int factor = 0;
+  int input = 0;
   bool roundWon = 1;
   int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
   for (int i=1;sequenceLength;i++) {
@@ -139,7 +139,7 @@ bool playerTurn(int sequence) {
 }
 
 void playGame() {
-  int sequence = NULL;
+  int sequence = 0;
   bool roundWon = true;
   while (roundWon == true)
     flashLights();
@@ -212,7 +212,7 @@ void createSequenceTest() {
   Serial.println("TESTING createSequence");
   int sequence = 1234;
   int nextInt = random(4); // get a random 1/2/3/4
-  if (sequence != NULL) {
+  if (sequence > 0) {
     sequence = mattsCookedArrayAppend(sequence, nextInt); // "append next in sequence"
   } else {
     sequence = nextInt; // if the game has only begun, set sequence to the first rand int
