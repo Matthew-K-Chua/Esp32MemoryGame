@@ -45,11 +45,11 @@ void showLight(int light, int ledValue) {
 
 void flashLights() {
   for (int i=1;2;i++) {
-    for (int light=1;4;i++) {
+    for (int light=1;4;light++) {
       showLight(light, HIGH);
     }
     delay(250);
-    for (int light=1;4;i++) {
+    for (int light=1;4;light++) {
       showLight(light, LOW);
     }
     delay(250);
