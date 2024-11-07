@@ -61,7 +61,7 @@ void showLight(int light, int ledValue) {
   }
 }
 
-void flashLights(int fps) {
+void flashLights() {
   // turn on and off all lights twice
   int fps = 2; // flashes per second
   int delayAmount = 1000/(fps*2);
