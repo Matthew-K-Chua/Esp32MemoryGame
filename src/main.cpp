@@ -15,6 +15,17 @@ void setup() {
 }
 
 void loop() {
+  // UNIT TESTS //
+  // waitForInputTest();
+  // testHardware();
+  // flashLightsTest();
+  // mattsCookedArrayAppendTest();
+  // createSequenceTest();
+  // mattsCookedArrayIndexReturnTest();
+  // displaySequenceTest();
+  // getPlayerInputTest();
+
+
   // waitForInput();
   // playGame();
 }
@@ -31,7 +42,7 @@ bool waitForInput() {
 }
 
 void showLight(int light, int ledValue) {
-  // display the correct light
+  // display the correct light as per the diagram in obsidian
   switch (light) {
   case 1:
     digitalWrite(yellowLED, ledValue);
@@ -45,10 +56,12 @@ void showLight(int light, int ledValue) {
   case 4:
     digitalWrite(greenLED, ledValue);
     break;
+  default:
+    break;
   }
 }
 
-void flashLights() {
+void flashLights(int fps) {
   // turn on and off all lights twice
   int fps = 2; // flashes per second
   int delayAmount = 1000/(fps*2);
@@ -65,14 +78,13 @@ void flashLights() {
 }
 
 int mattsCookedArrayAppend(int array, int nextValue) {
+  // appends another value to this memory wasting array
   array = array * 10 + nextValue; // shift all numbers to the next 10's place, add the new number in the 1's palce.
   return array;
 }
 
 int createSequence(int sequence) {
-  // should add one more random int
-  // to the sequence number which I will
-  // treat as an array
+  // adds another step to the sequence
   int nextInt = random(4); // get a random 1/2/3/4
   if (sequence > 0) {
     sequence = mattsCookedArrayAppend(sequence, nextInt); // "append next in sequence"
@@ -83,25 +95,30 @@ int createSequence(int sequence) {
 }
 
 int mattsCookedArrayIndexReturn(int array, int index) {
-    int arrayLength = floor(log(array)/log(10)); // get the length of the array
-    int factor = pow(10, ((arrayLength - index + 1))); // find the multiplier that will put the index in the 1's place
-    int arrayChunk = floor(array/factor); // use that multiplier to shrink the number
-    int indexValue = arrayChunk%10; // get the 1's place
-    return indexValue;
+  // returns the index of this memory wasting array
+  int arrayLength = floor(log(array)/log(10)); // get the length of the array
+  int factor = pow(10, ((arrayLength - index + 1))); // find the multiplier that will put the index in the 1's place
+  int arrayChunk = floor(array/factor); // use that multiplier to shrink the number
+  int indexValue = arrayChunk%10; // get the 1's place
+  return indexValue;
 }
 
 int displaySequence(int sequence) {
+  // displays the sequence for a player to watch and remember
   int next;
+  int fps = 2; // flashes per second
+  int delayAmount = 1000/(fps*2);
   int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
   for (int i=1;sequenceLength;i++) {
     next = mattsCookedArrayIndexReturn(sequence, i);
     showLight(next, HIGH);
-    delay(500);
+    delay(delayAmount);
     showLight(next, LOW);
   }
 }
 
 int getPlayerInput() { // verify that this outputs the correct things, otherwise change the numbers
+  // Waits for the player input and returns the corresponding value.
   int input = 0;
   while (!waitForInput()) {
     delay(1);
@@ -124,7 +141,38 @@ int getPlayerInput() { // verify that this outputs the correct things, otherwise
   return input;
 }
 
+void victoryFlash() {
+  // Flashes the lights in a cool sequence
+  // when the player hits 10/10 (because then I hit integer overflow and I don't want my game to die like tetris)
+  int fps = 3; // flashes per second
+  int delayAmount = 1000/fps;
+
+  // flash everything in a circle
+  for (int i=0;5;i++) { // requires 5 passes to turn everything off
+    showLight(i, HIGH);
+    showLight(i-1, LOW);
+    delay(delayAmount); 
+  }
+  // do it again but like with 2 dots at a time
+  for (int i=0;6;i++) { // I think it requires 6 passes to turn everything off
+    showLight(i, HIGH);
+    showLight(i-1, LOW);
+    delay(delayAmount); 
+  }
+  // then with 3 dots
+  for (int i=0;7;i++) { // I think it requires 7 passes to turn everything off
+    showLight(i, HIGH);
+    showLight(i-2, LOW);
+    delay(delayAmount); 
+  }
+  // then flash all four twice
+  flashLights();
+}
+
 bool playerTurn(int sequence) {
+  // Gets the player's input
+  // Shines the corresponding light
+  // Determines whether or not the player was correct
   int nextLot = 0;
   int next = 0;
   int factor = 0;
@@ -133,6 +181,9 @@ bool playerTurn(int sequence) {
   int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
   for (int i=1;sequenceLength;i++) {
     input = getPlayerInput();
+    showLight(input, HIGH);
+    delay(500);
+    showLight(input, LOW);
     next = mattsCookedArrayIndexReturn(sequence, i);
     if (input != next) {
       roundWon = 0;
@@ -144,18 +195,22 @@ bool playerTurn(int sequence) {
 }
 
 void playGame() {
+  // Plays the game until the player loses
   int sequence = 0;
   bool roundWon = true;
-  while (roundWon == true)
+  while (roundWon == true || sequence > 1000000000) {
     flashLights();
     sequence = createSequence(sequence);
     displaySequence(sequence);
     flashLights();
     roundWon = playerTurn(sequence);
+  }
+  if (roundWon == true) {
+    victoryFlash();
+  }
 }
 
 // TESTS //
-
 void waitForInputTest() {
   Serial.println("/////////////////////////////////");
   Serial.println("TESTING waitForInput");
@@ -206,7 +261,6 @@ void flashLightsTest() {
   flashLights();
   Serial.println("Test Complete");
 }
-
 
 void mattsCookedArrayAppendTest() {
   Serial.println("/////////////////////////////////");
