@@ -20,7 +20,7 @@ void loop() {
 bool waitForInput() {
   int xValue = analogRead(vrxPin);
   int yValue = analogRead(vryPin);
-  while ((abs(xValue) <  inputThreshold) || (abs(yValue) > inputThreshold)) {
+  while ((abs(xValue) <  inputThreshold) || (abs(yValue) < inputThreshold)) {
     delay(1);
   }
   return true;
