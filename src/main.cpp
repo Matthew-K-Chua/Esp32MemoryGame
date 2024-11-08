@@ -93,6 +93,7 @@ void flashLights() {
 
 int mattsCookedArrayAppend(int array, int nextValue) {
   // appends another value to this memory wasting array
+  // This does work as intended
   array = array * 10 + nextValue; // shift all numbers to the next 10's place, add the new number in the 1's palce.
   return array;
 }
@@ -110,6 +111,7 @@ int createSequence(int sequence) {
 
 int mattsCookedArrayIndexReturn(int array, int index) {
   // returns the index of this memory wasting array
+  // This does work as intended
   int arrayLength = floor(log10(array)); // get the length of the array
   int factor = pow(10, ((arrayLength - index + 1))); // find the multiplier that will put the index in the 1's place
   int arrayChunk = floor(array/factor); // use that multiplier to shrink the number
@@ -134,9 +136,7 @@ int displaySequence(int sequence) {
 int getPlayerInput() { // verify that this outputs the correct things, otherwise change the numbers
   // Waits for the player input and returns the corresponding value.
   int input = 0;
-  while (!waitForInput()) {
-    delay(1);
-  }
+  waitForInput();
   int xValue = analogRead(vrxPin);
   int yValue = analogRead(vryPin);
   if ((yValue > inputThresholdSmall) && (yValue < inputThresholdBig)) {
