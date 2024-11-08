@@ -1,5 +1,6 @@
 #include <Arduino.h>
 // Pinouts //
+// need to actually confirm these pins are valid.
 #define yellowLED 4
 #define redLED 0
 #define blueLED 2
@@ -8,11 +9,11 @@
 #define vryPin 3
 #define joystickButton 6
 
-// variables //
+// Thresholds for the joystick
 #define inputThresholdSmall 412
 #define inputThresholdBig 612
 
-// things that run //
+// CODE //
 void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(0)); // for pseudo random function
@@ -36,17 +37,17 @@ void loop() {
   // displaySequenceTest();
   // getPlayerInputTest();
 
-
   // waitForInput();
   // playGame();
 }
 
 bool waitForInput() {
+  // waits for user input then returns back
   int xValue = analogRead(vrxPin);
   int yValue = analogRead(vryPin);
 
   // filter out noise, check for input
-  while ((xValue >  inputThresholdSmall) && (xValue < inputThresholdBig) && (yValue < inputThresholdSmall) && (yValue < inputThresholdBig)) {
+  while ((xValue >  inputThresholdSmall) && (xValue < inputThresholdBig) && (yValue > inputThresholdSmall) && (yValue < inputThresholdBig) && (digitalRead(joystickButton) == LOW)) {
     xValue = analogRead(vrxPin);
     yValue = analogRead(vryPin);
     delay(10);
