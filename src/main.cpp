@@ -43,8 +43,8 @@ void loop() {
 
 bool waitForInput() {
   // waits for user input then returns back
-  int xValue = analogRead(vrxPin);
-  int yValue = analogRead(vryPin);
+  float xValue = analogRead(vrxPin);
+  float yValue = analogRead(vryPin);
 
   // filter out noise, check for input
   while ((xValue >  inputThresholdSmall) && (xValue < inputThresholdBig) && (yValue > inputThresholdSmall) && (yValue < inputThresholdBig) && (digitalRead(joystickButton) == LOW)) {
@@ -78,7 +78,7 @@ void showLight(int light, int ledValue) {
 void flashLights() {
   // turn on and off all lights twice
   int fps = 2; // flashes per second
-  int delayAmount = 1000/(fps*2);
+  int delayAmount = floor(1000/(fps*2));
   for (int i = 1; i <= 2; i++) {
     for (int light = 1; light <= 4; light++) {
       showLight(light, HIGH);
@@ -121,7 +121,7 @@ int displaySequence(int sequence) {
   // displays the sequence for a player to watch and remember
   int next;
   int fps = 2; // flashes per second
-  int delayAmount = 1000/(fps*2);
+  int delayAmount = floor(1000/(fps*2));
   int sequenceLength = floor(log10(sequence)); // get the power of 10 that the sequence is up to
   for (int i = 1; i <= sequenceLength; i++) {
     next = mattsCookedArrayIndexReturn(sequence, i);
