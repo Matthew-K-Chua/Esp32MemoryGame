@@ -7,11 +7,22 @@
 #define vrxPin 1
 #define vryPin 3
 #define joystickButton 6
-#define inputThreshold 400
 
+// variables //
+#define inputThresholdSmall 412
+#define inputThresholdBig 612
+
+// things that run //
 void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(0)); // for pseudo random function
+  pinMode(yellowLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(blueLED, OUTPUT);
+  pinMode(greenLED, OUTPUT);
+  pinMode(vrxPin, INPUT);
+  pinMode(vryPin, INPUT);
+  pinMode(joystickButton, INPUT);
 }
 
 void loop() {
@@ -35,8 +46,10 @@ bool waitForInput() {
   int yValue = analogRead(vryPin);
 
   // filter out noise, check for input
-  while ((abs(xValue) <  inputThreshold) || (abs(yValue) < inputThreshold)) {
-    delay(1);
+  while ((xValue >  inputThresholdSmall) && (xValue < inputThresholdBig) && (yValue < inputThresholdSmall) && (yValue < inputThresholdBig)) {
+    xValue = analogRead(vrxPin);
+    yValue = analogRead(vryPin);
+    delay(10);
   }
   return true;
 }
@@ -65,12 +78,12 @@ void flashLights() {
   // turn on and off all lights twice
   int fps = 2; // flashes per second
   int delayAmount = 1000/(fps*2);
-  for (int i=1;2;i++) {
-    for (int light=1;4;light++) {
+  for (int i = 1; i <= 2; i++) {
+    for (int light = 1; light <= 4; light++) {
       showLight(light, HIGH);
     }
     delay(delayAmount);
-    for (int light=1;4;light++) {
+    for (int light = 1; light <= 4; light++) {
       showLight(light, LOW);
     }
     delay(delayAmount);
@@ -85,7 +98,7 @@ int mattsCookedArrayAppend(int array, int nextValue) {
 
 int createSequence(int sequence) {
   // adds another step to the sequence
-  int nextInt = random(4); // get a random 1/2/3/4
+  int nextInt = random(1, 5); // get a random 1/2/3/4
   if (sequence > 0) {
     sequence = mattsCookedArrayAppend(sequence, nextInt); // "append next in sequence"
   } else {
@@ -96,7 +109,7 @@ int createSequence(int sequence) {
 
 int mattsCookedArrayIndexReturn(int array, int index) {
   // returns the index of this memory wasting array
-  int arrayLength = floor(log(array)/log(10)); // get the length of the array
+  int arrayLength = floor(log10(array)); // get the length of the array
   int factor = pow(10, ((arrayLength - index + 1))); // find the multiplier that will put the index in the 1's place
   int arrayChunk = floor(array/factor); // use that multiplier to shrink the number
   int indexValue = arrayChunk%10; // get the 1's place
@@ -108,8 +121,8 @@ int displaySequence(int sequence) {
   int next;
   int fps = 2; // flashes per second
   int delayAmount = 1000/(fps*2);
-  int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
-  for (int i=1;sequenceLength;i++) {
+  int sequenceLength = floor(log10(sequence)); // get the power of 10 that the sequence is up to
+  for (int i = 1; i <= sequenceLength; i++) {
     next = mattsCookedArrayIndexReturn(sequence, i);
     showLight(next, HIGH);
     delay(delayAmount);
@@ -125,14 +138,14 @@ int getPlayerInput() { // verify that this outputs the correct things, otherwise
   }
   int xValue = analogRead(vrxPin);
   int yValue = analogRead(vryPin);
-  if (abs(xValue) > abs(yValue)) {
-    if (xValue > 0) {
+  if ((yValue > inputThresholdSmall) && (yValue < inputThresholdBig)) {
+    if (xValue > 512) {
       input = 2;
     } else {
       input = 4;
     }
   } else {
-    if (yValue > 0) {
+    if (yValue > 512) {
       input = 1;
     } else {
       input = 3;
@@ -143,24 +156,24 @@ int getPlayerInput() { // verify that this outputs the correct things, otherwise
 
 void victoryFlash() {
   // Flashes the lights in a cool sequence
-  // when the player hits 10/10 (because then I hit integer overflow and I don't want my game to die like tetris)
+  // when the player hits 9/9 (because then I hit integer overflow and I don't want my game to die like tetris)
   int fps = 3; // flashes per second
   int delayAmount = 1000/fps;
 
   // flash everything in a circle
-  for (int i=0;5;i++) { // requires 5 passes to turn everything off
+  for (int i=0;i<=5;i++) { // requires 5 passes to turn everything off
     showLight(i, HIGH);
     showLight(i-1, LOW);
     delay(delayAmount); 
   }
   // do it again but like with 2 dots at a time
-  for (int i=0;6;i++) { // I think it requires 6 passes to turn everything off
+  for (int i=0;i<=6;i++) { // I think it requires 6 passes to turn everything off
     showLight(i, HIGH);
     showLight(i-1, LOW);
     delay(delayAmount); 
   }
   // then with 3 dots
-  for (int i=0;7;i++) { // I think it requires 7 passes to turn everything off
+  for (int i=0;i<=7;i++) { // I think it requires 7 passes to turn everything off
     showLight(i, HIGH);
     showLight(i-2, LOW);
     delay(delayAmount); 
@@ -173,20 +186,18 @@ bool playerTurn(int sequence) {
   // Gets the player's input
   // Shines the corresponding light
   // Determines whether or not the player was correct
-  int nextLot = 0;
   int next = 0;
-  int factor = 0;
   int input = 0;
-  bool roundWon = 1;
-  int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
-  for (int i=1;sequenceLength;i++) {
+  bool roundWon = true;
+  int sequenceLength = floor(log10(sequence)); // get the power of 10 that the sequence is up to
+  for (int i = 1; i <= sequenceLength; i++) {
     input = getPlayerInput();
     showLight(input, HIGH);
     delay(500);
     showLight(input, LOW);
     next = mattsCookedArrayIndexReturn(sequence, i);
     if (input != next) {
-      roundWon = 0;
+      roundWon = false;
       return roundWon;
     }
   }
@@ -198,7 +209,7 @@ void playGame() {
   // Plays the game until the player loses
   int sequence = 0;
   bool roundWon = true;
-  while (roundWon == true || sequence > 1000000000) {
+  while (roundWon == true && sequence < 100000000) {
     flashLights();
     sequence = createSequence(sequence);
     displaySequence(sequence);
@@ -240,9 +251,8 @@ void testHardware() {
   digitalWrite(greenLED, ledValue);
   Serial.println("Finished testing LEDs");
   Serial.println("Testing joystick controller for 7 seconds. Please move the joystick and push the button");
-  int currentTime = millis();
-  int stopTime = currentTime + 5000;
-  while (currentTime < stopTime) {
+  unsigned long stopTime = millis() + 5000;
+  while (millis() < stopTime) {
     int xValue = analogRead(vrxPin);
     int yValue = analogRead(vryPin);
     int joystickButtonValue = analogRead(joystickButton);
@@ -267,8 +277,7 @@ void mattsCookedArrayAppendTest() {
   Serial.println("TESTING mattsCookedArrayAppend");
   int array = 1234;
   int nextValue = 5;
-  int arrayLength = floor(log(array)/log(10)); // get the length of the array
-  array += pow(10,arrayLength+1)*nextValue;
+  array = mattsCookedArrayAppend(array, nextValue);
   if (array == 12345) {
     Serial.println("mattsCookedArrayAppend passed");
   } else {
@@ -281,13 +290,8 @@ void createSequenceTest() {
   Serial.println("/////////////////////////////////");
   Serial.println("TESTING createSequence");
   int sequence = 1234;
-  int nextInt = random(4); // get a random 1/2/3/4
-  if (sequence > 0) {
-    sequence = mattsCookedArrayAppend(sequence, nextInt); // "append next in sequence"
-  } else {
-    sequence = nextInt; // if the game has only begun, set sequence to the first rand int
-  }
-  if (sequence >= 12341 || sequence <= 12344) {
+  sequence = createSequence(sequence);
+  if (sequence >= 12341 && sequence <= 12344) {
     Serial.println("createSequence passed");
   }
   Serial.println("Test Complete");
@@ -336,8 +340,8 @@ void displaySequenceTest() {
   Serial.println("TESTING displaySequence");
   int sequence = 1234;
   int next;
-  int sequenceLength = floor(log(sequence)); // get the power of 10 that the sequence is up to
-  for (int i=1;sequenceLength;i++) {
+  int sequenceLength = floor(log10(sequence)); // get the power of 10 that the sequence is up to
+  for (int i=1;i<sequenceLength;i++) {
     next = mattsCookedArrayIndexReturn(sequence, i);
     showLight(next, HIGH);
     delay(500);
@@ -349,9 +353,8 @@ void displaySequenceTest() {
 void getPlayerInputTest() { // each input will illuminate the correct bulb for 5 seconds
   Serial.println("/////////////////////////////////");
   Serial.println("TESTING getPlayerInput");
-  int currentTime = millis();
-  int stopTime = currentTime + 5000;
-  while (currentTime < stopTime) {
+  unsigned long stopTime = millis() + 5000;
+  while (millis() < stopTime) {
     int input = getPlayerInput();
     showLight(input, HIGH);
     delay(100);
