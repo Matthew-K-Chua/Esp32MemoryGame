@@ -19,6 +19,7 @@ bool waitForInput() {
   float yValue = analogRead(vryPin);
 
   // filter out noise, check for input
+  Serial.println("Waiting for player input");
   while ((xValue >  inputThresholdSmall) && (xValue < inputThresholdBig) && (yValue > inputThresholdSmall) && (yValue < inputThresholdBig) && (digitalRead(joystickButton) == LOW)) {
     xValue = analogRead(vrxPin);
     yValue = analogRead(vryPin);
@@ -104,7 +105,9 @@ void displaySequence(int sequence) {
     showLight(next, HIGH);
     delay(delayAmount/2);
     showLight(next, LOW);
-    delay(delayAmount/2);
+    if (i != sequenceLength) {
+      delay(delayAmount/2);
+    }
   }
 }
 
@@ -133,17 +136,24 @@ int getPlayerInput() { // verify that this outputs the correct things, otherwise
 void victoryFlash() {
   // Flashes the lights in a cool sequence
   // when the player hits 9/9 (because then I hit integer overflow and I don't want my game to die like tetris)
-  int fps = 4; // flashes per second
+  int fps = 8; // flashes per second
   int delayAmount = floor(1000/fps);
   // flash everything in a circle
-  for (int i=0;i<4;i++){
-    for (int j=0;j<=5;j++) { // requires 5 passes to turn everything off
+  for (int i=1;i<=4;i++){
+    for (int j=1;j<=4;j++) { // requires 5 passes to turn everything off
       showLight(j, HIGH);
-      showLight(j-1, LOW);
       delay(delayAmount); 
+      showLight(j, LOW);
     }
   }
   // then flash all four four times
+  flashLights();
+  flashLights();
+}
+
+void loseFlash() {
+  flashLights();
+  flashLights();
   flashLights();
   flashLights();
 }
@@ -179,9 +189,9 @@ void playGame() {
   // Plays the game until the player loses
   int sequence = 0;
   bool roundWon = true;
+  flashLights();
   while (roundWon == true && sequence < 100000000) {
     Serial.println("starting... loop");
-    flashLights();
     sequence = createSequence(sequence);
     displaySequence(sequence);
     delay(500);
@@ -195,6 +205,8 @@ void playGame() {
   Serial.println(sequence);
   if (roundWon == true) {
     victoryFlash();
+  } else {
+    loseFlash();
   }
 }
 
@@ -364,10 +376,9 @@ void loop() {
   // displaySequenceTest();
   // getPlayerInputTest();
 
-  // waitForInput();
-  // playGame();
-
-  victoryFlash();
+  waitForInput();
+  playGame();
+  // victoryFlash();
 
   delay(500);
 }
