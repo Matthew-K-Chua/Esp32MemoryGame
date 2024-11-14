@@ -172,7 +172,7 @@ bool playerTurn(int sequence) {
     Serial.print("Gotten input: ");
     Serial.println(input);
     showLight(input, HIGH);
-    delay(500);
+    delay(300);
     showLight(input, LOW);
     next = mattsCookedArrayIndexReturn(sequence, i);
     Serial.println(next);
@@ -375,10 +375,9 @@ void loop() {
   // mattsCookedArrayIndexReturnTest();
   // displaySequenceTest();
   // getPlayerInputTest();
+  // victoryFlash();
 
   waitForInput();
   playGame();
-  // victoryFlash();
-
   delay(500);
 }
