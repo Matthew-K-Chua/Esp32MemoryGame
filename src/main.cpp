@@ -51,7 +51,7 @@ void showLight(int light, int ledValue) {
 
 void flashLights() {
   // turn on and off all lights twice
-  int fps = 2; // flashes per second
+  int fps = 4; // flashes per second
   int delayAmount = floor(1000/(fps*2));
   for (int i = 1; i <= 2; i++) {
     for (int light = 1; light <= 4; light++) {
@@ -86,8 +86,8 @@ int createSequence(int sequence) {
 int mattsCookedArrayIndexReturn(int array, int index) {
   // returns the index of this memory wasting array
   // This does work as intended
-  int arrayLength = floor(log10(array)); // get the length of the array
-  int factor = pow(10, ((arrayLength - index + 1))); // find the multiplier that will put the index in the 1's place
+  int arrayLength = floor(log10(array)) + 1; // get the length of the array
+  int factor = pow(10, ((arrayLength - index))); // find the multiplier that will put the index in the 1's place
   int arrayChunk = floor(array/factor); // use that multiplier to shrink the number
   int indexValue = arrayChunk%10; // get the 1's place
   return indexValue;
@@ -96,14 +96,15 @@ int mattsCookedArrayIndexReturn(int array, int index) {
 void displaySequence(int sequence) {
   // displays the sequence for a player to watch and remember
   int next;
-  int fps = 2; // flashes per second
+  int fps = 1; // flashes per second
   int delayAmount = floor(1000/(fps*2));
-  int sequenceLength = floor(log10(sequence)); // get the power of 10 that the sequence is up to
+  int sequenceLength = floor(log10(sequence)) + 1; // get the power of 10 that the sequence is up to
   for (int i = 1; i <= sequenceLength; i++) {
     next = mattsCookedArrayIndexReturn(sequence, i);
     showLight(next, HIGH);
-    delay(delayAmount);
+    delay(delayAmount/2);
     showLight(next, LOW);
+    delay(delayAmount/2);
   }
 }
 
@@ -114,16 +115,16 @@ int getPlayerInput() { // verify that this outputs the correct things, otherwise
   int xValue = analogRead(vrxPin);
   int yValue = analogRead(vryPin);
   if ((yValue > inputThresholdSmall) && (yValue < inputThresholdBig)) {
-    if (xValue > 512) {
-      input = 2;
+    if (xValue > inputThresholdBig) {
+      input = 3;
     } else {
-      input = 4;
+      input = 1;
     }
   } else {
-    if (yValue > 512) {
-      input = 1;
+    if (yValue > inputThresholdBig) {
+      input = 4;
     } else {
-      input = 3;
+      input = 2;
     }
   }
   return input;
@@ -132,28 +133,18 @@ int getPlayerInput() { // verify that this outputs the correct things, otherwise
 void victoryFlash() {
   // Flashes the lights in a cool sequence
   // when the player hits 9/9 (because then I hit integer overflow and I don't want my game to die like tetris)
-  int fps = 3; // flashes per second
-  int delayAmount = 1000/fps;
-
+  int fps = 4; // flashes per second
+  int delayAmount = floor(1000/fps);
   // flash everything in a circle
-  for (int i=0;i<=5;i++) { // requires 5 passes to turn everything off
-    showLight(i, HIGH);
-    showLight(i-1, LOW);
-    delay(delayAmount); 
+  for (int i=0;i<4;i++){
+    for (int j=0;j<=5;j++) { // requires 5 passes to turn everything off
+      showLight(j, HIGH);
+      showLight(j-1, LOW);
+      delay(delayAmount); 
+    }
   }
-  // do it again but like with 2 dots at a time
-  for (int i=0;i<=6;i++) { // I think it requires 6 passes to turn everything off
-    showLight(i, HIGH);
-    showLight(i-1, LOW);
-    delay(delayAmount); 
-  }
-  // then with 3 dots
-  for (int i=0;i<=7;i++) { // I think it requires 7 passes to turn everything off
-    showLight(i, HIGH);
-    showLight(i-2, LOW);
-    delay(delayAmount); 
-  }
-  // then flash all four twice
+  // then flash all four four times
+  flashLights();
   flashLights();
 }
 
@@ -164,13 +155,17 @@ bool playerTurn(int sequence) {
   int next = 0;
   int input = 0;
   bool roundWon = true;
-  int sequenceLength = floor(log10(sequence)); // get the power of 10 that the sequence is up to
+  int sequenceLength = floor(log10(sequence)) + 1; // get the power of 10 that the sequence is up to
   for (int i = 1; i <= sequenceLength; i++) {
+    Serial.println("waiting for input");
     input = getPlayerInput();
+    Serial.print("Gotten input: ");
+    Serial.println(input);
     showLight(input, HIGH);
     delay(500);
     showLight(input, LOW);
     next = mattsCookedArrayIndexReturn(sequence, i);
+    Serial.println(next);
     if (input != next) {
       roundWon = false;
       return roundWon;
@@ -185,12 +180,19 @@ void playGame() {
   int sequence = 0;
   bool roundWon = true;
   while (roundWon == true && sequence < 100000000) {
+    Serial.println("starting... loop");
     flashLights();
     sequence = createSequence(sequence);
     displaySequence(sequence);
+    delay(500);
     flashLights();
+    Serial.println(sequence);
     roundWon = playerTurn(sequence);
+    Serial.println("finished... loop");
   }
+  Serial.println("Exited loop, finished game");
+  Serial.println(roundWon);
+  Serial.println(sequence);
   if (roundWon == true) {
     victoryFlash();
   }
@@ -362,8 +364,10 @@ void loop() {
   // displaySequenceTest();
   // getPlayerInputTest();
 
-  waitForInput();
-  playGame();
+  // waitForInput();
+  // playGame();
+
+  victoryFlash();
 
   delay(500);
 }
