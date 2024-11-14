@@ -1,45 +1,17 @@
 #include <Arduino.h>
 // Pinouts //
 // need to actually confirm these pins are valid.
-#define yellowLED 4
-#define redLED 0
-#define blueLED 2
-#define greenLED 15
-#define vrxPin 1
-#define vryPin 3
-#define joystickButton 6
+#define yellowLED 16
+#define redLED 17
+#define blueLED 5
+#define greenLED 18
+#define vrxPin 15
+#define vryPin 2
+#define joystickButton 4
 
 // Thresholds for the joystick
-#define inputThresholdSmall 412
-#define inputThresholdBig 612
-
-// CODE //
-void setup() {
-  Serial.begin(9600);
-  randomSeed(analogRead(0)); // for pseudo random function
-  pinMode(yellowLED, OUTPUT);
-  pinMode(redLED, OUTPUT);
-  pinMode(blueLED, OUTPUT);
-  pinMode(greenLED, OUTPUT);
-  pinMode(vrxPin, INPUT);
-  pinMode(vryPin, INPUT);
-  pinMode(joystickButton, INPUT);
-}
-
-void loop() {
-  // UNIT TESTS //
-  // waitForInputTest();
-  // testHardware();
-  // flashLightsTest();
-  // mattsCookedArrayAppendTest();
-  // createSequenceTest();
-  // mattsCookedArrayIndexReturnTest();
-  // displaySequenceTest();
-  // getPlayerInputTest();
-
-  // waitForInput();
-  // playGame();
-}
+#define inputThresholdSmall 550
+#define inputThresholdBig 3500
 
 bool waitForInput() {
   // waits for user input then returns back
@@ -52,6 +24,8 @@ bool waitForInput() {
     yValue = analogRead(vryPin);
     delay(10);
   }
+  Serial.println(xValue);
+  Serial.println(yValue);
   return true;
 }
 
@@ -119,7 +93,7 @@ int mattsCookedArrayIndexReturn(int array, int index) {
   return indexValue;
 }
 
-int displaySequence(int sequence) {
+void displaySequence(int sequence) {
   // displays the sequence for a player to watch and remember
   int next;
   int fps = 2; // flashes per second
@@ -362,4 +336,34 @@ void getPlayerInputTest() { // each input will illuminate the correct bulb for 5
     showLight(input, LOW);
   }
   Serial.println("Test Complete");
+}
+
+// CODE //
+void setup() {
+  Serial.begin(9600);
+  randomSeed(analogRead(0)); // for pseudo random function
+  pinMode(yellowLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(blueLED, OUTPUT);
+  pinMode(greenLED, OUTPUT);
+  pinMode(vrxPin, INPUT);
+  pinMode(vryPin, INPUT);
+  pinMode(joystickButton, INPUT);
+}
+
+void loop() {
+  // UNIT TESTS (passed) //
+  // waitForInputTest(); // joystick works
+  // testHardware(); // hardware works, not sure about joystick button tho
+  // flashLightsTest(); // lights flash properly
+  // mattsCookedArrayAppendTest();
+  // createSequenceTest();
+  // mattsCookedArrayIndexReturnTest();
+  // displaySequenceTest();
+  // getPlayerInputTest();
+
+  waitForInput();
+  playGame();
+
+  delay(500);
 }
