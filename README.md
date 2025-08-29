@@ -6,7 +6,3 @@ When looking on my electronics shelf, I found four LEDs, some wires and resistor
 So... what's the game?
 
 The computer will show the player a sequence starting with only one step. If the player correctly replicates the step using the joystick, then another step is added onto the sequence. The game continues until a player inputs the wrong value, or they reach round 9 at which point the game is won.
-
-Pretty simple right?
-
-Yeah, for the most part...
